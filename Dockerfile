@@ -9,6 +9,5 @@ FROM scratch AS final
 COPY --from=build /app/ff3-import-helper /
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENV TZ 'Etc/UTC'
-ENV CRON_SCHEDULE '@midnight'
-ENV GOTIFY_PRIORITY 5
+LABEL org.opencontainers.image.source=https://github.com/james-prince/ff3-import-helper
 ENTRYPOINT ["/ff3-import-helper"]
