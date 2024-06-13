@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -28,15 +29,26 @@ func main() {
 		panic(err)
 	}
 
+	var ListenerWaitGroup sync.WaitGroup
+	ListenerWaitGroup.Add(1)
+	go startHttpServer(&ListenerWaitGroup)
+	ListenerWaitGroup.Wait()
+
 	// Cron = cron.New()
+	Cron.AddFunc(CronSchedule, CronProcess)
 
 	if ImportOnStartup {
-		Process()
+		var StartupWaitGroup sync.WaitGroup
+		StartupWaitGroup.Add(1)
+		go func() {
+			Process()
+			StartupWaitGroup.Done()
+		}()
+		StartupWaitGroup.Wait()
 	}
 
-	Cron.AddFunc(CronSchedule, CronProcess)
-	fmt.Printf("Next Import: %s\n", Cron.Entries()[0].Schedule.Next(time.Now()))
 	Cron.Start()
+	fmt.Printf("Next Import: %s\n", Cron.Entries()[0].Schedule.Next(time.Now()))
 
 	select {} // TODO: replace with sync.WaitGroup
 	//			https://stackoverflow.com/questions/42752705/prevent-the-main-function-from-terminating-before-goroutines-finish-in-golang
