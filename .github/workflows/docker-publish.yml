@@ -71,7 +71,7 @@ jobs:
           flavor: |
             latest=auto
           tags: |
-            type=edge,enable=true,priority=700,prefix=,suffix=,branch=$repo.default_branch
+            type=edge
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
