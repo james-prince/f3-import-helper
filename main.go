@@ -132,7 +132,7 @@ func ProcessJsonFile(FileName string) (ExecResult, error) {
 	TotalWarningCount += WarningCount
 	TotalErrorCount += ErrorCount
 
-	fmt.Printf("[%s] Processed - 🆕%d⚠️%d🚨%d\n", FileName, MessageCount, WarningCount, ErrorCount)
+	fmt.Printf("[%s] Processed - %d NEW %d WARNINGS %d ERRORS\n", FileName, MessageCount, WarningCount, ErrorCount)
 
 	if MessageCount+WarningCount+ErrorCount == 0 {
 		return ExecResult, nil
