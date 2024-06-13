@@ -7,36 +7,78 @@ import (
 	"net/http"
 )
 
-func Notify(Title string, Message string) (*http.Response, error) {
-	if GotifyUrl != "" {
-		Response, err := NotifyGotify(Title, Message, GotifyPriority)
-		return Response, err
-	}
-	return &http.Response{}, nil
+type notification struct {
+	Title    string `json:"title"`
+	Message  string `json:"message"`
+	Priority *int   `json:"priority"`
 }
 
-func NotifyGotify(Title string, Message string, Priority int) (*http.Response, error) {
-	type GotifyPOST struct {
-		Title    string `json:"title"`
-		Message  string `json:"message"`
-		Priority int    `json:"priority"`
+func (n notification) Send() {
+	var err error
+	switch {
+	case GotifyUrl != "":
+		err = n.sendGotify()
+	default:
+		fmt.Println()
+		return
 	}
-	PostBody := GotifyPOST{
-		Title:    Title,
-		Message:  Message,
-		Priority: Priority,
-	}
-
-	Marshalled, err := json.Marshal(PostBody)
 	if err != nil {
-		return nil, err
+		fmt.Printf(Red+"Notification error:"+Reset+" %s\n", err.Error())
+	} else {
+		fmt.Printf(Green+"Notification sent:"+Reset+" %s\n", n.Title)
 	}
-	Response, err := http.Post(GotifyUrl, "application/json", bytes.NewReader(Marshalled))
-	if err != nil {
-		return nil, err
-	}
-	if Response.StatusCode != 200 {
-		return nil, fmt.Errorf("status: %d message: %s", Response.StatusCode, Response.Status)
-	}
-	return Response, nil
 }
+
+func (n notification) sendGotify() error {
+	if n.Priority == nil {
+		n.Priority = &GotifyPriority
+	}
+	marshalled, err := json.Marshal(n)
+	if err != nil {
+		return err
+	}
+	response, err := http.Post(GotifyUrl, "application/json", bytes.NewReader(marshalled))
+	switch {
+	case err != nil:
+		return err
+	case response.StatusCode != 200:
+		return fmt.Errorf("status: %d message: %s", response.StatusCode, response.Status)
+	}
+	return nil
+}
+
+// func Notify(Title string, Message string) {
+// 	if GotifyUrl != "" {
+// 		if err := NotifyGotify(Title, Message, GotifyPriority); err != nil {
+// 			fmt.Printf(Red+"[Gotify] error: %s\n"+Reset, err.Error())
+// 		} else {
+// 			fmt.Printf(Green+"[Gotify] Notification sent: %s\n"+Reset, Title)
+// 		}
+// 	}
+// }
+
+// func NotifyGotify(Title string, Message string, Priority int) error {
+// 	type GotifyPOST struct {
+// 		Title    string `json:"title"`
+// 		Message  string `json:"message"`
+// 		Priority int    `json:"priority"`
+// 	}
+// 	PostBody := GotifyPOST{
+// 		Title:    Title,
+// 		Message:  Message,
+// 		Priority: Priority,
+// 	}
+
+// 	Marshalled, err := json.Marshal(PostBody)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	Response, err := http.Post(GotifyUrl, "application/json", bytes.NewReader(Marshalled))
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if Response.StatusCode != 200 {
+// 		return fmt.Errorf("status: %d message: %s", Response.StatusCode, Response.Status)
+// 	}
+// 	return nil
+// }
