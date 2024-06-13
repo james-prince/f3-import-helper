@@ -20,7 +20,8 @@ var statusEndPoint endPoint
 
 func serveStatusEndPoint(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	// io.WriteString(w, "fsdfsdf")
+
+	statusEndPoint.NextImport = Cron.Entries()[0].Schedule.Next(time.Now())
 
 	if err := json.NewEncoder(w).Encode(statusEndPoint); err != nil {
 		fmt.Println(err.Error())
