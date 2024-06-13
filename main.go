@@ -48,6 +48,14 @@ func CronProcess() {
 }
 
 func Process() error {
+	statusEndPoint.ImportRunning = true
+	defer func() {
+		statusEndPoint.ImportRunning = false
+		statusEndPoint.LastImport = time.Now()
+	}()
+
+	fmt.Printf(Blue + "Starting Import Job\n" + Reset)
+	fmt.Printf(Blue + "-------------------\n" + Reset)
 	LsExecResult, err := Exec(Context, DockerContainerName, []string{"ls", "-1", "/import"})
 	if err != nil {
 		return err // TODO: replace panic
@@ -62,14 +70,20 @@ func Process() error {
 		if JsonFileRegex.MatchString(FileName) {
 			if ExecResult, err := ProcessJsonFile(FileName); err != nil {
 				fmt.Printf("[%s] Error ❌\n", FileName)
-				Notify(fmt.Sprintf("[%s] Import Error", FileName), ExecResult.StdOut)
+				notification{
+					Title:   fmt.Sprintf("[%s] Import Error", FileName),
+					Message: ExecResult.StdOut,
+				}.Send()
 			}
 		}
 	}
-	if TotalMessageCount+TotalWarningCount+TotalErrorCount > 0 {
-		if Response, err := Notify("Data Imported", NotificationMessage); err != nil {
-			fmt.Printf("Notification Error: %s\n", Response.Status)
-		}
+	if TotalMessageCount+TotalWarningCount+TotalErrorCount == 0 {
+		fmt.Println(Green + "No new messages - no notification sent" + Reset)
+	} else {
+		notification{
+			Title:   "Data Imported",
+			Message: NotificationMessage,
+		}.Send()
 	}
 	Response, err := http.Get(UptimeKumaUrl)
 	switch {
@@ -78,6 +92,8 @@ func Process() error {
 	case Response.StatusCode != 200:
 		fmt.Printf("UptimeKuma Error: %s\n", Response.Status)
 	}
+	fmt.Printf(Blue + "-------------------\n" + Reset)
+	fmt.Printf(Blue + "Import Job Finished\n" + Reset)
 	return nil
 }
 
