@@ -70,6 +70,7 @@ func Process() error {
 	fmt.Printf(Blue + "-------------------\n" + Reset)
 	LsExecResult, err := Exec(Context, DockerContainerName, []string{"ls", "-1", "/import"})
 	if err != nil {
+		fmt.Println(lsExecResult.StdErr)
 		return err // TODO: replace panic
 	}
 	LsContents := strings.Split(LsExecResult.StdOut, "\n")
