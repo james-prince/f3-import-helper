@@ -15,6 +15,7 @@ var (
 	UptimeKumaUrl       string
 	ImportOnStartup     bool
 	httpListenPort      int
+	httpBaseURL         string
 )
 
 func LoadEnvVariables() {
@@ -28,6 +29,7 @@ func LoadEnvVariables() {
 	EnvVar{Key: "UPTIMEKUMA_URL"}.applyToString(&UptimeKumaUrl)
 	EnvVar{Key: "IMPORT_ON_STARTUP"}.applyToBool(&ImportOnStartup)
 	EnvVar{Key: "HTTP_LISTEN_PORT", DefaultInt: 80}.applyToInt(&httpListenPort)
+	EnvVar{Key: "HTTP_BASE_URL", DefaultString: fmt.Sprintf("http://localhost:%d", httpListenPort)}.applyToString(&httpBaseURL)
 	fmt.Println(Magenta + "---------------------" + Reset)
 }
 
