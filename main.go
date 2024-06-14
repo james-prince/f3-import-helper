@@ -27,9 +27,9 @@ func main() {
 	LoadEnvVariables()
 
 	if len(os.Args) > 1 {
-	switch os.Args[1] {
-	case "healthcheck":
-		healthCheck()
+		switch os.Args[1] {
+		case "healthcheck":
+			healthCheck()
 		}
 	}
 
