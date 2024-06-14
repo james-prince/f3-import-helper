@@ -14,6 +14,7 @@ var (
 	GotifyPriority      int
 	UptimeKumaUrl       string
 	ImportOnStartup     bool
+	httpListenPort      int
 )
 
 func LoadEnvVariables() {
@@ -26,6 +27,7 @@ func LoadEnvVariables() {
 	EnvVar{Key: "GOTIFY_PRIORITY", DefaultInt: 5}.applyToInt(&GotifyPriority)
 	EnvVar{Key: "UPTIMEKUMA_URL"}.applyToString(&UptimeKumaUrl)
 	EnvVar{Key: "IMPORT_ON_STARTUP"}.applyToBool(&ImportOnStartup)
+	EnvVar{Key: "HTTP_LISTEN_PORT", DefaultInt: 80}.applyToInt(&httpListenPort)
 	fmt.Println(Magenta + "---------------------" + Reset)
 }
 

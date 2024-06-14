@@ -31,11 +31,10 @@ func serveStatusEndPoint(w http.ResponseWriter, r *http.Request) {
 func startHttpServer(waitGroup *sync.WaitGroup) {
 	http.HandleFunc("/status", serveStatusEndPoint)
 
-	listenPort := ":3333"
-	fmt.Printf("json endpoint available at http://localhost%s/status\n", listenPort)
+	fmt.Printf("json endpoint available at http://localhost:%d/status\n", httpListenPort)
 	waitGroup.Done()
 
-	err := http.ListenAndServe(listenPort, nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", httpListenPort), nil)
 	switch {
 	case errors.Is(err, http.ErrServerClosed):
 		os.Exit(1)
