@@ -31,7 +31,7 @@ func serveStatusEndPoint(w http.ResponseWriter, r *http.Request) {
 func startHttpServer(waitGroup *sync.WaitGroup) {
 	http.HandleFunc("/status", serveStatusEndPoint)
 
-	fmt.Printf("json endpoint available at http://localhost:%d/status\n", httpListenPort)
+	fmt.Printf("json endpoint available at %s/status\n", httpBaseURL)
 	waitGroup.Done()
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", httpListenPort), nil)
