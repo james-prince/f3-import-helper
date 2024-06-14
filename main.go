@@ -73,14 +73,35 @@ func Process() error {
 		fmt.Println(lsExecResult.StdErr)
 		return err // TODO: replace panic
 	}
-	LsContents := strings.Split(LsExecResult.StdOut, "\n")
+	LsContents := strings.Split(lsExecResult.StdOut, "\n")
+
+	JsonFileCount := 0
+	MaxFileNameLength := 0
+	for _, FileName := range LsContents {
+		if JsonFileRegex.MatchString(FileName) {
+			JsonFileCount += 1
+			if len(FileName) > MaxFileNameLength {
+				MaxFileNameLength = len(FileName)
+			}
+		}
+	}
 
 	TotalMessageCount = 0
 	TotalWarningCount = 0
 	TotalErrorCount = 0
 
+	CurrentJsonFile := 0
 	for _, FileName := range LsContents {
 		if JsonFileRegex.MatchString(FileName) {
+			CurrentJsonFile += 1
+
+			// Add trailing whitespace to filename so they appear uniform length on terminal output
+			PaddedFileName := FileName
+			for uniformFileNameLen := true; uniformFileNameLen; uniformFileNameLen = len(PaddedFileName) < MaxFileNameLength {
+				PaddedFileName += " "
+			}
+
+			fmt.Printf("[%d/%d] %s", CurrentJsonFile, JsonFileCount, PaddedFileName)
 			if ExecResult, err := ProcessJsonFile(FileName); err != nil {
 				fmt.Printf("[%s] Error ❌\n", FileName)
 				notification{
