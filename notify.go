@@ -44,7 +44,7 @@ func (n notification) Send() {
 	var err error
 	switch {
 	case GotifyUrl != "":
-		err = n.sendGotify()
+		err = n.gotifySend()
 	default:
 		fmt.Println()
 		return
@@ -56,7 +56,7 @@ func (n notification) Send() {
 	}
 }
 
-func (n notification) sendGotify() error {
+func (n notification) gotifySend() error {
 	if n.Priority == nil {
 		n.Priority = &GotifyPriority
 	}
