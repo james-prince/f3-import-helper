@@ -87,7 +87,7 @@ func Process() error {
 
 	fmt.Printf(Blue + "Starting Import Job\n" + Reset)
 	fmt.Printf(Blue + "-------------------\n" + Reset)
-	LsExecResult, err := Exec(Context, DockerContainerName, []string{"ls", "-1", "/import"})
+	lsExecResult, err := Exec(Context, DockerContainerName, []string{"ls", "-1", DockerImportDir})
 	if err != nil {
 		fmt.Println(lsExecResult.StdErr)
 		return err // TODO: replace panic
