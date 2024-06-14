@@ -10,4 +10,8 @@ COPY --from=build /app/ff3-import-helper /
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENV TZ 'Etc/UTC'
 LABEL org.opencontainers.image.source=https://github.com/james-prince/ff3-import-helper
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=20s \
+  CMD ["/ff3-import-helper", "healthcheck"]
+
 ENTRYPOINT ["/ff3-import-helper"]
