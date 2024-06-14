@@ -25,6 +25,11 @@ var Cron = cron.New()
 func main() {
 	LoadEnvVariables()
 
+	switch os.Args[1] {
+	case "healthcheck":
+		healthCheck()
+	}
+
 	if err := CompileRegex(); err != nil {
 		panic(err)
 	}
@@ -52,6 +57,17 @@ func main() {
 
 	select {} // TODO: replace with sync.WaitGroup
 	//			https://stackoverflow.com/questions/42752705/prevent-the-main-function-from-terminating-before-goroutines-finish-in-golang
+}
+
+func healthCheck() {
+	response, err := http.Get(fmt.Sprintf("http://localhost:%d/status", httpListenPort))
+	switch {
+	case err != nil:
+		os.Exit(1)
+	case response.StatusCode != 200:
+		os.Exit(1)
+	}
+	os.Exit(0)
 }
 
 func CronProcess() {
