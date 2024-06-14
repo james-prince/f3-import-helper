@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -28,8 +29,20 @@ func serveStatusEndPoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func serveLog(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text") //Check text is valid content type
+	logID := strings.TrimPrefix(r.URL.Path, "/logs/")
+	logFileBytes, err := os.ReadFile(fmt.Sprintf("/logs/%s.log", logID))
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.Write(logFileBytes)
+}
+
 func startHttpServer(waitGroup *sync.WaitGroup) {
 	http.HandleFunc("/status", serveStatusEndPoint)
+	http.HandleFunc("/logs/", serveLog)
 
 	fmt.Printf("json endpoint available at %s/status\n", httpBaseURL)
 	waitGroup.Done()
