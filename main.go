@@ -25,9 +25,11 @@ var Cron = cron.New()
 func main() {
 	LoadEnvVariables()
 
+	if len(os.Args) > 1 {
 	switch os.Args[1] {
 	case "healthcheck":
 		healthCheck()
+		}
 	}
 
 	if err := CompileRegex(); err != nil {
