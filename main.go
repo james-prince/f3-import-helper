@@ -123,10 +123,12 @@ func Process() error {
 
 			fmt.Printf("[%d/%d] %s ", CurrentJsonFile, JsonFileCount, PaddedFileName)
 			if ExecResult, err := ProcessJsonFile(FileName); err != nil {
-				fmt.Printf(Red + "X" + Reset + "\tError\n")
+				logID := uuid.NewString()
+				os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
+				fmt.Printf(Red+"X"+Reset+"\tError - log stored at /logs/%s.log\n", logID)
 				notification{
 					Title:   fmt.Sprintf("[%s] Import Error", FileName),
-					Message: ExecResult.StdOut,
+					Message: fmt.Sprintf("%s/logs/%s", httpBaseURL, logID),
 				}.Send()
 			}
 		}
