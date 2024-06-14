@@ -119,9 +119,9 @@ func Process() error {
 				PaddedFileName += " "
 			}
 
-			fmt.Printf("[%d/%d] %s", CurrentJsonFile, JsonFileCount, PaddedFileName)
+			fmt.Printf("[%d/%d] %s ", CurrentJsonFile, JsonFileCount, PaddedFileName)
 			if ExecResult, err := ProcessJsonFile(FileName); err != nil {
-				fmt.Printf("[%s] Error ❌\n", FileName)
+				fmt.Printf(Red + "X" + Reset + "\tError\n")
 				notification{
 					Title:   fmt.Sprintf("[%s] Import Error", FileName),
 					Message: ExecResult.StdOut,
@@ -184,7 +184,7 @@ func ProcessJsonFile(FileName string) (ExecResult, error) {
 	TotalWarningCount += WarningCount
 	TotalErrorCount += ErrorCount
 
-	fmt.Printf("[%s] Processed - %d NEW %d WARNINGS %d ERRORS\n", FileName, MessageCount, WarningCount, ErrorCount)
+	fmt.Printf(Green+"✓"+Reset+"\t%d NEW %d WARNINGS %d ERRORS\n", MessageCount, WarningCount, ErrorCount)
 
 	if MessageCount+WarningCount+ErrorCount == 0 {
 		return ExecResult, nil
