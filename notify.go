@@ -8,9 +8,36 @@ import (
 )
 
 type notification struct {
-	Title    string `json:"title"`
-	Message  string `json:"message"`
-	Priority *int   `json:"priority"`
+	Title        string        `json:"title"`
+	Message      string        `json:"message"`
+	Priority     *int          `json:"priority"`
+	GotifyExtras *gotifyExtras `json:"extras"`
+}
+
+type gotifyExtras struct {
+	GotifyClientNotification *gotifyClientNotification `json:"client::notification"`
+	GotifyClientDisplay      *gotifyClientDisplay      `json:"client::display"`
+	GotifyAndroidAction      *gotifyAndroidAction      `json:"android::action"`
+}
+
+type gotifyClientNotification struct {
+	GotifyClick *gotifyClick `json:"click"`
+}
+
+type gotifyClientDisplay struct {
+	ContentType string `json:"contentType"`
+}
+
+type gotifyAndroidAction struct {
+	GotifyOnReceive *gotifyOnReceive `json:"onReceive"`
+}
+
+type gotifyOnReceive struct {
+	IntentURL string `json:"intentUrl"`
+}
+
+type gotifyClick struct {
+	Url string `json:"url"`
 }
 
 func (n notification) Send() {
