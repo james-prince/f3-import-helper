@@ -23,7 +23,7 @@ var (
 var Cron = cron.New()
 
 func main() {
-	LoadEnvVariables() //
+	LoadEnvVariables()
 
 	if err := CompileRegex(); err != nil {
 		panic(err)
