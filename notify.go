@@ -25,7 +25,7 @@ type gotifyClientNotification struct {
 }
 
 type gotifyClientDisplay struct {
-	ContentType string `json:"contentType"`
+	GotifyContentType string `json:"contentType"`
 }
 
 type gotifyAndroidAction struct {
@@ -33,11 +33,11 @@ type gotifyAndroidAction struct {
 }
 
 type gotifyOnReceive struct {
-	IntentURL string `json:"intentUrl"`
+	GotifyIntentURL string `json:"intentUrl"`
 }
 
 type gotifyClick struct {
-	Url string `json:"url"`
+	GotifyUrl string `json:"url"`
 }
 
 func (n notification) Send() {
