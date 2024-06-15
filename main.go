@@ -126,9 +126,13 @@ func Process() error {
 				logID := uuid.NewString()
 				os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
 				fmt.Printf(Red+"X"+Reset+"\tError - log stored at /logs/%s.log\n", logID)
+				notificationMessage := fmt.Sprintf("Log stored at **/logs/%s.log**\n\n[Open log in browser](%s/logs/%s)", logID, httpBaseURL, logID)
 				notification{
 					Title:   fmt.Sprintf("[%s] Import Error", FileName),
-					Message: fmt.Sprintf("%s/logs/%s", httpBaseURL, logID),
+					Message: notificationMessage,
+					GotifyExtras: &gotifyExtras{
+						GotifyClientDisplay: &gotifyClientDisplay{
+							GotifyContentType: "text/markdown"}},
 				}.Send()
 			}
 		}
