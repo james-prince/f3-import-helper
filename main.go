@@ -143,6 +143,9 @@ func Process() error {
 		notification{
 			Title:   "Data Imported",
 			Message: NotificationMessage,
+			GotifyExtras: &gotifyExtras{
+				GotifyClientDisplay: &gotifyClientDisplay{
+					GotifyContentType: "text/markdown"}},
 		}.Send()
 	}
 	Response, err := http.Get(UptimeKumaUrl)
@@ -200,7 +203,7 @@ func ProcessJsonFile(FileName string) (ExecResult, error) {
 
 	DisplayName := strings.ToUpper(strings.TrimSuffix(FileName, filepath.Ext(FileName)))
 
-	NotificationMessageLine := fmt.Sprintf("[%s]", DisplayName)
+	NotificationMessageLine := fmt.Sprintf("- %s", DisplayName)
 	if MessageCount > 0 {
 		NotificationMessageLine += fmt.Sprintf(" 🆕%d", MessageCount)
 	}
