@@ -1,9 +1,12 @@
 package main
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
+	"fmt"
 	"io"
+	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -16,6 +19,37 @@ type ExecResult struct {
 	StdOut   string
 	StdErr   string
 	ExitCode int
+}
+
+func getDockerDirContents(DirPath string, Extension string) ([]string, error) {
+	DockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return []string{}, err
+	}
+
+	reader, _, err := DockerClient.CopyFromContainer(Context, DockerContainerName, DirPath)
+	if err != nil {
+		return []string{}, err
+	}
+	defer reader.Close()
+
+	tarReader := tar.NewReader(reader)
+
+	var Files []string
+Loop:
+	for {
+		Header, err := tarReader.Next()
+		switch {
+		case err != nil:
+			break Loop
+		case Header.FileInfo().IsDir():
+			continue
+		case Extension != "" && filepath.Ext(Header.FileInfo().Name()) != Extension:
+			continue
+		}
+		Files = append(Files, fmt.Sprintf("/%s", Header.Name))
+	}
+	return Files, nil
 }
 
 func Exec(Context context.Context, ContainerID string, Commands []string) (ExecResult, error) {

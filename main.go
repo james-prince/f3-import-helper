@@ -89,22 +89,22 @@ func Process() error {
 
 	fmt.Printf(Blue + "Starting Import Job\n" + Reset)
 	fmt.Printf(Blue + "-------------------\n" + Reset)
-	lsExecResult, err := Exec(Context, DockerContainerName, []string{"ls", "-1", DockerImportDir})
+
+	files, err := getDockerDirContents(DockerImportDir, ".json")
 	if err != nil {
-		fmt.Println(lsExecResult.StdErr)
-		return err // TODO: replace panic
+		return err
 	}
-	LsContents := strings.Split(lsExecResult.StdOut, "\n")
 
 	JsonFileCount := 0
 	MaxFileNameLength := 0
-	for _, FileName := range LsContents {
-		if JsonFileRegex.MatchString(FileName) {
-			JsonFileCount += 1
-			if len(FileName) > MaxFileNameLength {
-				MaxFileNameLength = len(FileName)
-			}
+	for _, FilePath := range files {
+		FileName := filepath.Base(FilePath)
+		// if JsonFileRegex.MatchString(FileName) {
+		JsonFileCount += 1
+		if len(FileName) > MaxFileNameLength {
+			MaxFileNameLength = len(FileName)
 		}
+		// }
 	}
 
 	TotalMessageCount = 0
@@ -112,32 +112,34 @@ func Process() error {
 	TotalErrorCount = 0
 
 	CurrentJsonFile := 0
-	for _, FileName := range LsContents {
-		if JsonFileRegex.MatchString(FileName) {
-			CurrentJsonFile += 1
+	for _, FilePath := range files {
+		FileName := filepath.Base(FilePath)
+		// if JsonFileRegex.MatchString(FileName) {
+		CurrentJsonFile += 1
 
-			// Add trailing whitespace to filename so they appear uniform length on terminal output
-			PaddedFileName := FileName
-			for uniformFileNameLen := true; uniformFileNameLen; uniformFileNameLen = len(PaddedFileName) < MaxFileNameLength {
-				PaddedFileName += " "
-			}
-
-			fmt.Printf("[%d/%d] %s ", CurrentJsonFile, JsonFileCount, PaddedFileName)
-			if ExecResult, err := ProcessJsonFile(FileName); err != nil {
-				logID := uuid.NewString()
-				os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
-				fmt.Printf(Red+"X"+Reset+"\tError - log stored at /logs/%s.log\n", logID)
-				notificationMessage := fmt.Sprintf("Log stored at **/logs/%s.log**\n\n[Open log in browser](%s/logs/%s)", logID, httpBaseURL, logID)
-				notification{
-					Title:   fmt.Sprintf("[%s] Import Error", FileName),
-					Message: notificationMessage,
-					GotifyExtras: &gotifyExtras{
-						GotifyClientDisplay: &gotifyClientDisplay{
-							GotifyContentType: "text/markdown"}},
-				}.Send()
-			}
+		// Add trailing whitespace to filename so they appear uniform length on terminal output
+		PaddedFileName := FileName
+		for uniformFileNameLen := true; uniformFileNameLen; uniformFileNameLen = len(PaddedFileName) < MaxFileNameLength {
+			PaddedFileName += " "
 		}
+
+		fmt.Printf("[%d/%d] %s ", CurrentJsonFile, JsonFileCount, PaddedFileName)
+		if ExecResult, err := ProcessJsonFile(FilePath); err != nil {
+			logID := uuid.NewString()
+			os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
+			fmt.Printf(Red+"X"+Reset+"\tError - log stored at /logs/%s.log\n", logID)
+			notificationMessage := fmt.Sprintf("Log stored at **/logs/%s.log**\n\n[Open log in browser](%s/logs/%s)", logID, httpBaseURL, logID)
+			notification{
+				Title:   fmt.Sprintf("[%s] Import Error", FileName),
+				Message: notificationMessage,
+				GotifyExtras: &gotifyExtras{
+					GotifyClientDisplay: &gotifyClientDisplay{
+						GotifyContentType: "text/markdown"}},
+			}.Send()
+		}
+		// }
 	}
+
 	if TotalMessageCount+TotalWarningCount+TotalErrorCount == 0 {
 		fmt.Println(Green + "No new messages - no notification sent" + Reset)
 	} else {
@@ -161,12 +163,13 @@ func Process() error {
 	return nil
 }
 
-func ProcessJsonFile(FileName string) (ExecResult, error) {
+func ProcessJsonFile(FilePath string) (ExecResult, error) {
+	FileName := filepath.Base(FilePath)
 	ExecResult, err := Exec(Context, DockerContainerName, []string{
 		"php",
 		"artisan",
 		"importer:import",
-		fmt.Sprintf("%s/%s", DockerImportDir, FileName)})
+		FilePath})
 	if err != nil {
 		return ExecResult, err
 	}
