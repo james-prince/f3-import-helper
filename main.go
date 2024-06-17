@@ -70,8 +70,9 @@ func healthCheck() {
 		os.Exit(1)
 	case response.StatusCode != 200:
 		os.Exit(1)
+	default:
+		os.Exit(0)
 	}
-	os.Exit(0)
 }
 
 func CronProcess() {
