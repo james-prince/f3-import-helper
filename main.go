@@ -95,16 +95,13 @@ func Process() error {
 		return err
 	}
 
-	JsonFileCount := 0
+	JsonFileCount := len(files)
 	MaxFileNameLength := 0
 	for _, FilePath := range files {
 		FileName := filepath.Base(FilePath)
-		// if JsonFileRegex.MatchString(FileName) {
-		JsonFileCount += 1
 		if len(FileName) > MaxFileNameLength {
 			MaxFileNameLength = len(FileName)
 		}
-		// }
 	}
 
 	TotalMessageCount = 0
