@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"path/filepath"
 
@@ -21,21 +20,28 @@ type ExecResult struct {
 	ExitCode int
 }
 
-func getDockerDirContents(DirPath string, Extension string) ([]string, error) {
+type dockerDirFileContent struct {
+	FileName      string
+	FilePath      string
+	FileExtension string
+	FileContents  []byte
+}
+
+func getDockerDirContents(dirPath string, fileExtension string) ([]dockerDirFileContent, error) {
 	DockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
-	reader, _, err := DockerClient.CopyFromContainer(Context, DockerContainerName, DirPath)
+	reader, _, err := DockerClient.CopyFromContainer(Context, DockerContainerName, dirPath)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	defer reader.Close()
 
 	tarReader := tar.NewReader(reader)
 
-	var Files []string
+	var Files []dockerDirFileContent
 Loop:
 	for {
 		Header, err := tarReader.Next()
@@ -44,10 +50,20 @@ Loop:
 			break Loop
 		case Header.FileInfo().IsDir():
 			continue
-		case Extension != "" && filepath.Ext(Header.FileInfo().Name()) != Extension:
+		case fileExtension != "" && filepath.Ext(Header.FileInfo().Name()) != fileExtension:
 			continue
 		}
-		Files = append(Files, fmt.Sprintf("/%s", Header.Name))
+		File := dockerDirFileContent{
+			FileName:      Header.FileInfo().Name(),
+			FilePath:      "/" + Header.Name,
+			FileExtension: filepath.Ext(Header.FileInfo().Name()),
+		}
+		fileContents, err := io.ReadAll(tarReader)
+		if err == nil {
+			File.FileContents = fileContents
+		}
+
+		Files = append(Files, File)
 	}
 	return Files, nil
 }

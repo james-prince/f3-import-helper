@@ -97,10 +97,9 @@ func Process() error {
 
 	JsonFileCount := len(files)
 	MaxFileNameLength := 0
-	for _, FilePath := range files {
-		FileName := filepath.Base(FilePath)
-		if len(FileName) > MaxFileNameLength {
-			MaxFileNameLength = len(FileName)
+	for _, dockerFileContent := range files {
+		if len(dockerFileContent.FileName) > MaxFileNameLength {
+			MaxFileNameLength = len(dockerFileContent.FileName)
 		}
 	}
 
@@ -108,26 +107,25 @@ func Process() error {
 	TotalWarningCount = 0
 	TotalErrorCount = 0
 
-	CurrentJsonFile := 0
-	for _, FilePath := range files {
-		FileName := filepath.Base(FilePath)
-		// if JsonFileRegex.MatchString(FileName) {
-		CurrentJsonFile += 1
-
+	for index, dockerFileContent := range files {
 		// Add trailing whitespace to filename so they appear uniform length on terminal output
-		PaddedFileName := FileName
-		for uniformFileNameLen := true; uniformFileNameLen; uniformFileNameLen = len(PaddedFileName) < MaxFileNameLength {
+		PaddedFileName := dockerFileContent.FileName
+		for {
+			if len(PaddedFileName) >= MaxFileNameLength {
+				break
+			}
 			PaddedFileName += " "
 		}
+		formatString := "%0" + fmt.Sprintf("%d", len(strconv.Itoa(JsonFileCount))) + "d"
 
-		fmt.Printf("[%d/%d] %s ", CurrentJsonFile, JsonFileCount, PaddedFileName)
-		if ExecResult, err := ProcessJsonFile(FilePath); err != nil {
+		fmt.Printf("["+formatString+"/"+formatString+"] %s ", index+1, JsonFileCount, PaddedFileName)
+		if ExecResult, err := ProcessJsonFile(dockerFileContent.FilePath); err != nil {
 			logID := uuid.NewString()
 			os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
-			fmt.Printf(Red+"X"+Reset+"\tError - log stored at /logs/%s.log\n", logID)
+			fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
 			notificationMessage := fmt.Sprintf("Log stored at **/logs/%s.log**\n\n[Open log in browser](%s/logs/%s)", logID, httpBaseURL, logID)
 			notification{
-				Title:   fmt.Sprintf("[%s] Import Error", FileName),
+				Title:   fmt.Sprintf("[%s] Import Error", dockerFileContent.FileName),
 				Message: notificationMessage,
 				GotifyExtras: &gotifyExtras{
 					GotifyClientDisplay: &gotifyClientDisplay{
@@ -196,7 +194,7 @@ func ProcessJsonFile(FilePath string) (ExecResult, error) {
 	TotalWarningCount += WarningCount
 	TotalErrorCount += ErrorCount
 
-	fmt.Printf(Green+"✓"+Reset+"\t%d NEW %d WARNINGS %d ERRORS\n", MessageCount, WarningCount, ErrorCount)
+	fmt.Printf(Green+"✔"+Reset+" | %d NEW %d WARNINGS %d ERRORS\n", MessageCount, WarningCount, ErrorCount)
 
 	if MessageCount+WarningCount+ErrorCount == 0 {
 		return ExecResult, nil
