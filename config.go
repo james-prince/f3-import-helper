@@ -23,22 +23,22 @@ func LoadEnvVariables() {
 	fmt.Println(Magenta + "---------------------" + Reset)
 	EnvVar{Key: "DOCKER_CONTAINER_NAME", Required: true}.applyToString(&DockerContainerName)
 	EnvVar{Key: "DOCKER_IMPORT_DIR", Required: true}.applyToString(&DockerImportDir)
-	EnvVar{Key: "CRON_SCHEDULE", DefaultString: "@midnight"}.applyToString(&CronSchedule)
+	EnvVar{Key: "CRON_SCHEDULE", DefaultStringValue: "@midnight"}.applyToString(&CronSchedule)
 	EnvVar{Key: "GOTIFY_URL"}.applyToString(&GotifyUrl)
-	EnvVar{Key: "GOTIFY_PRIORITY", DefaultInt: 5}.applyToInt(&GotifyPriority)
+	EnvVar{Key: "GOTIFY_PRIORITY", DefaultIntValue: 5}.applyToInt(&GotifyPriority)
 	EnvVar{Key: "UPTIMEKUMA_URL"}.applyToString(&UptimeKumaUrl)
 	EnvVar{Key: "IMPORT_ON_STARTUP"}.applyToBool(&ImportOnStartup)
-	EnvVar{Key: "HTTP_LISTEN_PORT", DefaultInt: 80}.applyToInt(&httpListenPort)
-	EnvVar{Key: "HTTP_BASE_URL", DefaultString: fmt.Sprintf("http://localhost:%d", httpListenPort)}.applyToString(&httpBaseURL)
+	EnvVar{Key: "HTTP_LISTEN_PORT", DefaultIntValue: 80}.applyToInt(&httpListenPort)
+	EnvVar{Key: "HTTP_BASE_URL", DefaultStringValue: fmt.Sprintf("http://localhost:%d", httpListenPort)}.applyToString(&httpBaseURL)
 	fmt.Println(Magenta + "---------------------" + Reset)
 }
 
 type EnvVar struct {
-	Key           string
-	Required      bool
-	DefaultString string
-	DefaultInt    int
-	DefaultBool   bool
+	Key                string
+	Required           bool // Exit application if value not defined
+	DefaultStringValue string
+	DefaultIntValue    int
+	DefaultBoolValue   bool
 }
 
 func (e EnvVar) applyToString(Pointer *string) {
@@ -48,7 +48,7 @@ func (e EnvVar) applyToString(Pointer *string) {
 		return
 	}
 	e.exitIfRequired()
-	*Pointer = e.DefaultString
+	*Pointer = e.DefaultStringValue
 	fmt.Printf(Cyan+"%s: \"%s\" (Default)\n"+Reset, e.Key, *Pointer)
 }
 
@@ -63,7 +63,7 @@ func (e EnvVar) applyToBool(Pointer *bool) {
 		}
 	}
 	e.exitIfRequired()
-	*Pointer = e.DefaultBool
+	*Pointer = e.DefaultBoolValue
 	fmt.Printf(Cyan+"%s: %t (Default)\n"+Reset, e.Key, *Pointer)
 }
 
@@ -78,7 +78,7 @@ func (e EnvVar) applyToInt(Pointer *int) {
 		}
 	}
 	e.exitIfRequired()
-	*Pointer = e.DefaultInt
+	*Pointer = e.DefaultIntValue
 	fmt.Printf(Cyan+"%s: %d (Default)\n"+Reset, e.Key, *Pointer)
 }
 
