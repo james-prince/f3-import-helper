@@ -120,17 +120,34 @@ func Process() error {
 
 		fmt.Printf("["+formatString+"/"+formatString+"] %s ", index+1, JsonFileCount, PaddedFileName)
 		if ExecResult, err := ProcessJsonFile(dockerFileContent.FilePath); err != nil {
-			logID := uuid.NewString()
-			os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
+
+			DisplayName := strings.ToUpper(strings.TrimSuffix(dockerFileContent.FileName, filepath.Ext(dockerFileContent.FileName)))
+
+			NotificationMessageLine := fmt.Sprintf("- %s: Errors", DisplayName)
+
+			logID, err := recordLog(ExecResult.StdOut)
+			if err == nil {
+				NotificationMessageLine += fmt.Sprintf(" [View Log](%s/logs/%s)", httpBaseURL, logID)
+			}
+
+			if NotificationMessage != "" {
+				NotificationMessage += "\n"
+			}
+			NotificationMessage += NotificationMessageLine
+
 			fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
-			notificationMessage := fmt.Sprintf("Log stored at **/logs/%s.log**\n\n[Open log in browser](%s/logs/%s)", logID, httpBaseURL, logID)
-			notification{
-				Title:   fmt.Sprintf("[%s] Import Error", dockerFileContent.FileName),
-				Message: notificationMessage,
-				GotifyExtras: &gotifyExtras{
-					GotifyClientDisplay: &gotifyClientDisplay{
-						GotifyContentType: "text/markdown"}},
-			}.Send()
+
+			TotalErrorCount += 1
+			// os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
+			// fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
+			// notificationMessage := fmt.Sprintf("Log stored at **/logs/%s.log**\n\n[Open log in browser](%s/logs/%s)", logID, httpBaseURL, logID)
+			// notification{
+			// 	Title:   fmt.Sprintf("[%s] Import Error", dockerFileContent.FileName),
+			// 	Message: notificationMessage,
+			// 	GotifyExtras: &gotifyExtras{
+			// 		GotifyClientDisplay: &gotifyClientDisplay{
+			// 			GotifyContentType: "text/markdown"}},
+			// }.Send()
 		}
 		// }
 	}
@@ -156,6 +173,13 @@ func Process() error {
 	fmt.Printf(Blue + "-------------------\n" + Reset)
 	fmt.Printf(Blue + "Import Job Finished\n" + Reset)
 	return nil
+}
+
+func recordLog(message string) (string, error) {
+	logID := uuid.NewString()
+	err := os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(message), 0644) //Todo, add error check
+	return logID, err
+
 }
 
 func ProcessJsonFile(FilePath string) (ExecResult, error) {
@@ -194,7 +218,7 @@ func ProcessJsonFile(FilePath string) (ExecResult, error) {
 	TotalWarningCount += WarningCount
 	TotalErrorCount += ErrorCount
 
-	fmt.Printf(Green+"✔"+Reset+" | %d NEW %d WARNINGS %d ERRORS\n", MessageCount, WarningCount, ErrorCount)
+	fmt.Printf(Green+"✓"+Reset+" | %d NEW %d WARNINGS %d ERRORS\n", MessageCount, WarningCount, ErrorCount)
 
 	if MessageCount+WarningCount+ErrorCount == 0 {
 		return ExecResult, nil
@@ -202,15 +226,15 @@ func ProcessJsonFile(FilePath string) (ExecResult, error) {
 
 	DisplayName := strings.ToUpper(strings.TrimSuffix(FileName, filepath.Ext(FileName)))
 
-	NotificationMessageLine := fmt.Sprintf("- %s", DisplayName)
+	NotificationMessageLine := fmt.Sprintf("- %s:", DisplayName)
 	if MessageCount > 0 {
-		NotificationMessageLine += fmt.Sprintf(" 🆕%d", MessageCount)
+		NotificationMessageLine += fmt.Sprintf(" %d NEW", MessageCount)
 	}
 	if WarningCount > 0 {
-		NotificationMessageLine += fmt.Sprintf(" ⚠️%d", WarningCount)
+		NotificationMessageLine += fmt.Sprintf(" %d WARNINGS", WarningCount)
 	}
 	if ErrorCount > 0 {
-		NotificationMessageLine += fmt.Sprintf(" 🚨%d", ErrorCount)
+		NotificationMessageLine += fmt.Sprintf(" %d ERRORS", ErrorCount)
 	}
 	if NotificationMessage != "" {
 		NotificationMessage += "\n"
