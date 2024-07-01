@@ -134,6 +134,7 @@ func Process() error {
 				NotificationMessage += "\n"
 			}
 			NotificationMessage += NotificationMessageLine
+			NotificationMessageLine = ""
 
 			fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
 
@@ -240,6 +241,7 @@ func ProcessJsonFile(FilePath string) (ExecResult, error) {
 		NotificationMessage += "\n"
 	}
 	NotificationMessage += NotificationMessageLine
+	NotificationMessageLine = ""
 	return ExecResult, nil
 
 }
