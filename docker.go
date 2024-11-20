@@ -50,6 +50,8 @@ Loop:
 			break Loop
 		case Header.FileInfo().IsDir():
 			continue
+		case Header.FileInfo().Name()[0,1]="_":
+			continue
 		case fileExtension != "" && filepath.Ext(Header.FileInfo().Name()) != fileExtension:
 			continue
 		}
