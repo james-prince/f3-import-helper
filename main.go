@@ -80,6 +80,34 @@ func CronProcess() {
 	fmt.Printf("Next Import: %s\n", Cron.Entries()[0].Schedule.Next(time.Now()))
 }
 
+func GetErrorMessage(ExitCode int) string {
+	switch ExitCode {
+	case 1:
+		return "Generic error or unspecified problem during import"
+	case 64:
+		return "Cannot connect to Firefly III"
+	case 65:
+		return "Invalid path provided"
+	case 66:
+		return "Path is not allowed"
+	case 67:
+		return "There are no files in the provided directory"
+	case 68:
+		return "Cannot read configuration file"
+	case 69:
+		return "Cannot parse configuration file"
+	case 70:
+		return "The importable file cannot be found"
+	case 71:
+		return "The importable file cannot be read"
+	case 72:
+		return "Too many errors processing the data in the importable file"
+	case 73:
+		return "Nothing was imported during this run"
+	}
+	return ""
+}
+
 func Process() error {
 	statusEndPoint.ImportRunning = true
 	defer func() {
@@ -123,7 +151,7 @@ func Process() error {
 
 			DisplayName := strings.ToUpper(strings.TrimSuffix(dockerFileContent.FileName, filepath.Ext(dockerFileContent.FileName)))
 
-			NotificationMessageLine := fmt.Sprintf("- %s: Errors", DisplayName)
+			NotificationMessageLine := fmt.Sprintf("- %s: %s", DisplayName, GetErrorMessage(ExecResult.ExitCode))
 
 			logID, err := recordLog(ExecResult.StdOut)
 			if err == nil {
@@ -193,10 +221,13 @@ func ProcessJsonFile(FilePath string) (ExecResult, error) {
 	if err != nil {
 		return ExecResult, err
 	}
-	switch Output := ExecResult.StdOut; {
-	case Output == "":
-
+	if ExecResult.ExitCode != 0 {
+		return ExecResult, nil
 	}
+	// switch Output := ExecResult.StdOut; {
+	// case Output == "":
+
+	// }
 
 	MessageCountTextArray := MessageCountExtractRegex.FindStringSubmatch(ExecResult.StdOut)
 	WarningCountTextArray := WarningCountExtractRegex.FindStringSubmatch(ExecResult.StdOut)
