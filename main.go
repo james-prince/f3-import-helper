@@ -221,9 +221,9 @@ func ProcessJsonFile(FilePath string) (ExecResult, error) {
 	if err != nil {
 		return ExecResult, err
 	}
-	if ExecResult.ExitCode != 0 {
-		return ExecResult, nil
-	}
+	// if ExecResult.ExitCode != 0 {
+	// 	return ExecResult, nil
+	// }
 	// switch Output := ExecResult.StdOut; {
 	// case Output == "":
 
