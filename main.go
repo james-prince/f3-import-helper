@@ -213,7 +213,7 @@ func recordLog(message string) (string, error) {
 
 func ProcessJsonFile(FilePath string) (ExecResult, error) {
 	FileName := filepath.Base(FilePath)
-	ExecResult, err := Exec(Context, DockerContainerName, []string{
+	ExecResult, err := Exec(Context, DockerContainerName, "www-data", []string{
 		"php",
 		"artisan",
 		"importer:import",
