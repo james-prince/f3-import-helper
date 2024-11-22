@@ -151,7 +151,7 @@ func Process() error {
 
 			DisplayName := strings.ToUpper(strings.TrimSuffix(dockerFileContent.FileName, filepath.Ext(dockerFileContent.FileName)))
 
-			NotificationMessageLine := fmt.Sprintf("- %s: %s", DisplayName, GetErrorMessage(ExecResult.ExitCode))
+			NotificationMessageLine := fmt.Sprintf("- %s: ExitCode %d (%s)", DisplayName, ExecResult.ExitCode, GetErrorMessage(ExecResult.ExitCode))
 
 			logID, err := recordLog(ExecResult.StdOut)
 			if err == nil {
