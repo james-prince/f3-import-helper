@@ -70,7 +70,7 @@ Loop:
 	return Files, nil
 }
 
-func Exec(Context context.Context, ContainerID string, Commands []string) (ExecResult, error) {
+func Exec(Context context.Context, ContainerID string, User string, Commands []string) (ExecResult, error) {
 	// DockerClient, err := client.NewEnvClient()
 	var ExecResult ExecResult
 
@@ -85,6 +85,7 @@ func Exec(Context context.Context, ContainerID string, Commands []string) (ExecR
 		AttachStderr: true,
 		AttachStdout: true,
 		Cmd:          Commands,
+		User:         User,
 	}
 
 	IDResponse, err := DockerClient.ContainerExecCreate(Context, ContainerID, Config)
