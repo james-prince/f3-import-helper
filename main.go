@@ -149,6 +149,8 @@ func Process() error {
 		fmt.Printf("["+formatString+"/"+formatString+"] %s ", index+1, JsonFileCount, PaddedFileName)
 		if ExecResult, err := ProcessJsonFile(dockerFileContent.FilePath); err != nil {
 
+			ReportError := ExecResult.ExitCode != 73
+
 			DisplayName := strings.ToUpper(strings.TrimSuffix(dockerFileContent.FileName, filepath.Ext(dockerFileContent.FileName)))
 
 			NotificationMessageLine := fmt.Sprintf("- %s: ExitCode %d (%s)", DisplayName, ExecResult.ExitCode, GetErrorMessage(ExecResult.ExitCode))
@@ -161,7 +163,10 @@ func Process() error {
 			if NotificationMessage != "" {
 				NotificationMessage += "\n"
 			}
-			NotificationMessage += NotificationMessageLine
+
+			if ReportError {
+				NotificationMessage += NotificationMessageLine
+			}
 			NotificationMessageLine = ""
 
 			fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
