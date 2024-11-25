@@ -166,12 +166,12 @@ func Process() error {
 
 			if ReportError {
 				NotificationMessage += NotificationMessageLine
+				TotalErrorCount += 1
 			}
 			NotificationMessageLine = ""
 
 			fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
 
-			TotalErrorCount += 1
 			// os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
 			// fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
 			// notificationMessage := fmt.Sprintf("Log stored at **/logs/%s.log**\n\n[Open log in browser](%s/logs/%s)", logID, httpBaseURL, logID)
