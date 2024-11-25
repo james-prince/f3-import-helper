@@ -171,19 +171,7 @@ func Process() error {
 			NotificationMessageLine = ""
 
 			fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
-
-			// os.WriteFile(fmt.Sprintf("/logs/%s.log", logID), []byte(ExecResult.StdOut), 0644) //Todo, add error check
-			// fmt.Printf(Red+"X"+Reset+" | Error - log stored at /logs/%s.log\n", logID)
-			// notificationMessage := fmt.Sprintf("Log stored at **/logs/%s.log**\n\n[Open log in browser](%s/logs/%s)", logID, httpBaseURL, logID)
-			// notification{
-			// 	Title:   fmt.Sprintf("[%s] Import Error", dockerFileContent.FileName),
-			// 	Message: notificationMessage,
-			// 	GotifyExtras: &gotifyExtras{
-			// 		GotifyClientDisplay: &gotifyClientDisplay{
-			// 			GotifyContentType: "text/markdown"}},
-			// }.Send()
 		}
-		// }
 	}
 
 	if TotalMessageCount+TotalWarningCount+TotalErrorCount == 0 {
@@ -226,13 +214,6 @@ func ProcessJsonFile(FilePath string) (ExecResult, error) {
 	if err != nil {
 		return ExecResult, err
 	}
-	// if ExecResult.ExitCode != 0 {
-	// 	return ExecResult, nil
-	// }
-	// switch Output := ExecResult.StdOut; {
-	// case Output == "":
-
-	// }
 
 	MessageCountTextArray := MessageCountExtractRegex.FindStringSubmatch(ExecResult.StdOut)
 	WarningCountTextArray := WarningCountExtractRegex.FindStringSubmatch(ExecResult.StdOut)
